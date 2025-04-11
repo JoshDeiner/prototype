@@ -1,0 +1,6 @@
+show the contents of the file hi.txt
+show contents of ../prototype/hi.txt
+list all files in the current directory with details
+list all files in ../ with details
+list all files in ~/
+exit

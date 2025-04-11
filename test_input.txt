@@ -1,0 +1,5 @@
+show me files
+list all files in the current directory with details
+open a file
+show contents of hi.txt
+exit

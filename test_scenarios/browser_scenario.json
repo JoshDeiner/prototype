@@ -1,0 +1,7 @@
+{
+  "user_input": "How do I open up my browser?",
+  "expected_action": {
+    "type": "launch_app",
+    "app_name": "firefox"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "user_input": "Show me the current directory",
+  "expected_action": {
+    "type": "os_command",
+    "command": "pwd"
+  }
+}

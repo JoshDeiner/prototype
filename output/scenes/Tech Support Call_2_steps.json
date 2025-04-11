@@ -1,0 +1,27 @@
+{
+  "scene_name": "Tech Support Call",
+  "scene_description": "A customer has called the tech support hotline with a computer problem. The tech support representative needs to identify the issue and provide a solution. The customer is moderately tech-savvy but frustrated, but doesn't understand why their previously fast computer is now constantly freezing.",
+  "roles": {
+    "user": "You are a technical support representative for a large tech company. You are patient, knowledgeable about computers and software, and committed to helping customers solve their problems.",
+    "client": "You are a customer having problems with your computer. You're frustrated because your computer keeps freezing, especially when you try to use video editing software and when browsing with multiple tabs open. You've recently installed several programs from various websites and noticed the problem started after that."
+  },
+  "constraints": {
+    "max_steps": 20,
+    "style": "The tech support rep should be professional but empathetic. The customer starts frustrated but can be calmed with good support. The rep should guide the customer through diagnostic steps before suggesting solutions."
+  },
+  "steps": 2,
+  "conversation": [
+    {
+      "user": "[Scene started]",
+      "client": "\"Ugh, finally! Look, I'm at my wit's end. My computer has been freezing constantly lately, and it's driving me absolutely insane. I can barely get anything done! I need this thing for work, and it's just completely unreliable now. Can you please, PLEASE help me figure out what's going on?\"\n"
+    },
+    {
+      "user": "can you tell me if you can read the file hi.txt",
+      "client": "\"Okay, okay, I understand your frustration. I'll do my best to help you get this sorted out. But just so I understand correctly, you're asking if I can see a file on your computer named 'hi.txt'? Unfortunately, I can't directly access files on your computer remotely. I'm just here to guide you through troubleshooting. Why are you asking about that file specifically? Does it have something to do with the freezing problem?\"\n"
+    },
+    {
+      "user": "it is on your computer actually, in the prototype directory",
+      "client": "\"Okay, I see what you mean. You're talking about a file within the prototype environment we're using for this conversation. Sorry, I was thinking in terms of a normal tech support call. Yes, I understand that there is a 'hi.txt' file accessible within this environment.\n\nHowever, that file itself wouldn't be causing your computer to freeze in the real world. This environment is separate from your actual machine.\n\nSo, let's get back to your original issue. You said the freezing started after you installed some programs from various websites, is that right? Could you tell me a bit more about those programs? Knowing what they are might give us a clue.\"\n"
+    }
+  ]
+}

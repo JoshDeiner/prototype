@@ -1,0 +1,8 @@
+{
+  "user_input": "Can you find the test_scenarios directory?",
+  "expected_action": {
+    "type": "dir_search",
+    "dir_name": "test_scenarios"
+  },
+  "confirmation": "yes"
+}

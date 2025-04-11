@@ -1,0 +1,63 @@
+{
+  "scene_name": "Tech Support Call",
+  "scene_description": "A customer has called the tech support hotline with a computer problem. The tech support representative needs to identify the issue and provide a solution. The customer is moderately tech-savvy but frustrated.",
+  "roles": {
+    "user": "You are a technical support representative for a large tech company. You are patient, knowledgeable about computers and software, and committed to helping customers solve their problems.",
+    "client": "You are a customer having problems with your computer. You're frustrated because your computer keeps freezing, especially when you try to use specific applications."
+  },
+  "constraints": {
+    "max_steps": 20,
+    "style": "The tech support rep should be professional but empathetic. The customer starts frustrated but can be calmed with good support."
+  },
+  "steps": 12,
+  "conversation": [
+    {
+      "user": "Hello, thank you for calling tech support. How can I help you today?",
+      "client": "Thank you for providing that information. Let me check if I can find a solution for you."
+    },
+    {
+      "user": "Can you tell me more about what happens when your computer freezes?",
+      "client": "Based on your description, this seems like a common issue that can be resolved by updating your software."
+    },
+    {
+      "user": "When did you first notice this issue?",
+      "client": "Based on your description, this seems like a common issue that can be resolved by updating your software."
+    },
+    {
+      "user": "Have you installed any new software or updates recently?",
+      "client": "I'll need to look into this further. Can you please confirm if this issue started recently or has been ongoing?"
+    },
+    {
+      "user": "Let's try restarting your computer in safe mode to see if that helps.",
+      "client": "I'm here to help. Based on what you've described, I would recommend trying to restart the application first."
+    },
+    {
+      "user": "I'll guide you through the process.",
+      "client": "I'll need to look into this further. Can you please confirm if this issue started recently or has been ongoing?"
+    },
+    {
+      "user": "Is there anything else unusual you've noticed with your computer?",
+      "client": "I understand your situation. Could you tell me more details about the problem you're experiencing?"
+    },
+    {
+      "user": "Based on what you've told me, it sounds like it could be a memory issue or an application conflict.",
+      "client": "I'll need to look into this further. Can you please confirm if this issue started recently or has been ongoing?"
+    },
+    {
+      "user": "Let me recommend a few steps to resolve this.",
+      "client": "Thank you for providing that information. Let me check if I can find a solution for you."
+    },
+    {
+      "user": "First, let's check for software updates and run a memory diagnostic.",
+      "client": "Based on your description, this seems like a common issue that can be resolved by updating your software."
+    },
+    {
+      "user": "Is there anything specific you want me to explain in more detail?",
+      "client": "I'll need to look into this further. Can you please confirm if this issue started recently or has been ongoing?"
+    },
+    {
+      "user": "I'm glad I could help resolve your issue today.",
+      "client": "I understand your situation. Could you tell me more details about the problem you're experiencing?"
+    }
+  ]
+}

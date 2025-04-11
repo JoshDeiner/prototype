@@ -1,0 +1,8 @@
+{
+  "user_input": "Can you check if test.txt exists and then show me its contents?",
+  "expected_action": {
+    "type": "file_check",
+    "file_path": "test.txt"
+  },
+  "confirmation": "yes"
+}
