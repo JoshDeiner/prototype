@@ -1,8 +1,0 @@
-name: Sales Inquiry Call
-roles:
-  user: You are a sales representative for a software company that sells productivity tools for businesses. You are knowledgeable about your product lineup, pricing, and how they compare to competitors.
-  client: You are a potential customer researching productivity tools for your mid-sized business. You're particularly interested in tools that can improve team collaboration and project management.
-scene: A potential customer has contacted the sales department to inquire about productivity software options. The sales rep needs to understand the customer's needs and recommend appropriate solutions.
-constraints:
-  max_steps: 15
-  style: The sales rep should be helpful but not pushy, focusing on understanding needs before pitching specific products.
