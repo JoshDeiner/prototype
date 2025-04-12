@@ -1,6 +1,0 @@
-show me the contents of hi.txt
-read ../README.md
-show files in ./
-list files in the parent directory
-check what's in ~/
-exit
