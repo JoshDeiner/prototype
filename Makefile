@@ -1,4 +1,4 @@
-.PHONY: run run-scene run-file run-help run-test clean
+.PHONY: run run-scene run-file run-help run-test clean docker-build docker-run docker-up docker-up-run docker-up-help docker-down docker-test
 
 # Default target
 all: run
@@ -46,3 +46,27 @@ test:
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
+
+# Docker commands
+docker-build:
+	docker build -t voice-assistant .
+
+docker-run:
+	docker run -it voice-assistant $(ARGS)
+
+# Docker Compose commands
+docker-up:
+	docker-compose up
+
+docker-up-run:
+	docker-compose run voice-assistant $(ARGS)
+
+docker-up-help:
+	docker-compose run voice-assistant --scene help_desk_scenario --data-dir /app/data
+
+docker-down:
+	docker-compose down
+
+# Run tests in Docker
+docker-test:
+	docker run voice-assistant python -m pytest tests/

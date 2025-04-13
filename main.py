@@ -8,8 +8,12 @@ This routes user input to the appropriate controller based on configuration.
 import os
 import sys
 import argparse
+from dotenv import load_dotenv
 from controller.wrapper import Wrapper
 import config as app_config
+
+# Load environment variables from .env file
+load_dotenv()
 
 def parse_args():
     """Parse command line arguments."""
@@ -106,8 +110,11 @@ def main():
         return
     
     # Configure the assistant
+    # Use the model specified in args, or fall back to default config
+    model_type = args.model if args.model != "llama" else app_config.DEFAULT_CONFIG["llm_model"]
+    
     user_config = {
-        "llm_model": args.model,
+        "llm_model": model_type,
         "dry_run": args.dry_run,
         "safe_mode": not args.unsafe,
         "auto_confirm": not args.manual_confirm,
@@ -120,7 +127,7 @@ def main():
     # Print configuration
     print("\n===== Voice Assistant =====")
     print("Configuration:")
-    print(f"- Model: {args.model}")
+    print(f"- Model: {model_type}")
     if args.scene:
         print(f"- Scene: {args.scene}")
     print(f"- Data directory: {args.data_dir}")

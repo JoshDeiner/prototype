@@ -1,0 +1,33 @@
+# Version control
+.git
+.gitignore
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data files that shouldn't be included
+data/*.log
+*.db
+
+# Local environment configuration
+.env
+.env.local
+
+# Test videos or large files
+*.mp4

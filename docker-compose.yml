@@ -1,0 +1,16 @@
+services:
+  voice-assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    environment:
+      - DATA_DIR=/app/data
+    # Let the entrypoint script handle the command
+    # The .env file will be mounted from the host and loaded by the application
+    env_file:
+      - .env
+    stdin_open: true  # docker run -i
+    tty: true         # docker run -t
+    init: true        # Use init process for proper signal handling

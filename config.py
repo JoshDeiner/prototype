@@ -10,13 +10,21 @@ from pathlib import Path
 
 # Base directories
 ROOT_DIR = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATA_DIR = ROOT_DIR / "data"
-SCENES_DIR = ROOT_DIR / "scenes"  # Use the original scenes directory
+
+# Get DATA_DIR from environment variable if set, otherwise use default
+DATA_DIR = Path(os.environ.get('DATA_DIR', str(ROOT_DIR / "data")))
+SCENES_DIR = Path(os.environ.get('SCENES_DIR', str(ROOT_DIR / "scenes")))  # Use the original scenes directory
+
+# Log the actual paths being used
+from tools.logger import setup_logger
+logger = setup_logger()
+logger.info(f"Using DATA_DIR: {DATA_DIR}")
+logger.info(f"Using SCENES_DIR: {SCENES_DIR}")
 OUTPUT_DIR = ROOT_DIR / "output" / "scenes"
 
 # Default configuration
 DEFAULT_CONFIG = {
-    "llm_model": "llama",
+    "llm_model": "gemini",
     "dry_run": False,
     "safe_mode": True,
     "auto_confirm": True,
