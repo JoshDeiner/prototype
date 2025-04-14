@@ -70,6 +70,54 @@ def parse_args():
         default="data",
         help="Directory containing data files (default: data)"
     )
+    
+    # Audio-related arguments
+    audio_group = parser.add_argument_group('Audio Options')
+    audio_group.add_argument(
+        "--audio",
+        action="store_true",
+        help="Enable audio input/output mode"
+    )
+    audio_group.add_argument(
+        "--list-audio-devices",
+        action="store_true",
+        help="List available audio input/output devices and exit"
+    )
+    audio_group.add_argument(
+        "--input-device",
+        type=int,
+        help="Specify audio input device ID"
+    )
+    audio_group.add_argument(
+        "--output-device",
+        type=int,
+        help="Specify audio output device ID"
+    )
+    audio_group.add_argument(
+        "--whisper-model",
+        type=str,
+        choices=["tiny", "base", "small", "medium", "large"],
+        default="base",
+        help="Specify Whisper model size (default: base)"
+    )
+    audio_group.add_argument(
+        "--tts-engine",
+        type=str,
+        choices=["pyttsx3", "edge_tts"],
+        default="pyttsx3",
+        help="Text-to-speech engine to use (default: pyttsx3)"
+    )
+    audio_group.add_argument(
+        "--no-continuous",
+        action="store_true",
+        help="Disable continuous listening (use push-to-talk mode)"
+    )
+    audio_group.add_argument(
+        "--no-log-audio",
+        action="store_true",
+        help="Disable audio conversation logging"
+    )
+    
     return parser.parse_args()
 
 def list_available_scenes():
@@ -84,6 +132,49 @@ def list_available_scenes():
             scenes.append(file)
             
     return scenes
+
+def list_audio_devices():
+    """List available audio input and output devices."""
+    try:
+        # First try to import needed modules
+        import sounddevice as sd
+        
+        # Get device info
+        devices = sd.query_devices()
+        
+        # Separate into input and output devices
+        input_devices = []
+        output_devices = []
+        
+        for i, device in enumerate(devices):
+            if device['max_input_channels'] > 0:
+                input_devices.append((i, device['name'], device['max_input_channels']))
+            if device['max_output_channels'] > 0:
+                output_devices.append((i, device['name'], device['max_output_channels']))
+        
+        # Print input devices
+        print("\n===== Audio Input Devices =====")
+        if not input_devices:
+            print("No input devices found.")
+        else:
+            for id, name, channels in input_devices:
+                print(f"ID: {id} - {name} ({channels} channels)")
+        
+        # Print output devices
+        print("\n===== Audio Output Devices =====")
+        if not output_devices:
+            print("No output devices found.")
+        else:
+            for id, name, channels in output_devices:
+                print(f"ID: {id} - {name} ({channels} channels)")
+                
+        print("\nTo use a specific device, run with --input-device ID and/or --output-device ID")
+        
+    except ImportError:
+        print("\nAudio device listing requires sounddevice module.")
+        print("Install required packages with: pip install sounddevice")
+    except Exception as e:
+        print(f"\nError listing audio devices: {e}")
 
 def main():
     """Run the voice assistant."""
@@ -109,10 +200,16 @@ def main():
                 print(f"{i}. {scene} - {name}")
         return
     
+    # Check if we should list audio devices and exit
+    if args.list_audio_devices:
+        list_audio_devices()
+        return
+    
     # Configure the assistant
     # Use the model specified in args, or fall back to default config
     model_type = args.model if args.model != "llama" else app_config.DEFAULT_CONFIG["llm_model"]
     
+    # Basic configuration
     user_config = {
         "llm_model": model_type,
         "dry_run": args.dry_run,
@@ -123,6 +220,29 @@ def main():
         "max_history": args.max_history,
         "data_dir": args.data_dir
     }
+    
+    # Audio configuration if enabled
+    if args.audio:
+        # Check if audio modules are available
+        try:
+            import sounddevice
+            import whisper
+            import pyttsx3
+            
+            # Add audio configuration
+            user_config.update({
+                "audio_mode": True,
+                "audio_input_device": args.input_device,
+                "audio_output_device": args.output_device,
+                "audio_model_size": args.whisper_model,
+                "tts_engine": args.tts_engine,
+                "log_audio": not args.no_log_audio,
+                "continuous_listening": not args.no_continuous
+            })
+        except ImportError as e:
+            print(f"\nError: Audio mode requires additional modules. {e}")
+            print("Install required packages with: pip install sounddevice scipy openai-whisper pyttsx3 pygame edge-tts")
+            return
     
     # Print configuration
     print("\n===== Voice Assistant =====")
@@ -136,6 +256,18 @@ def main():
     print(f"- Confirmation: {'Manual' if args.manual_confirm else 'Automatic'}")
     print(f"- Auto-confirmation delay: {args.delay} seconds")
     print(f"- History size: {args.max_history} turns")
+    
+    # Print audio configuration if enabled
+    if args.audio:
+        print("\nAudio Configuration:")
+        print(f"- Audio mode: Enabled")
+        print(f"- Input device: {args.input_device if args.input_device is not None else 'Default'}")
+        print(f"- Output device: {args.output_device if args.output_device is not None else 'Default'}")
+        print(f"- Whisper model: {args.whisper_model}")
+        print(f"- TTS engine: {args.tts_engine}")
+        print(f"- Listening mode: {'Push-to-talk' if args.no_continuous else 'Continuous'}")
+        print(f"- Audio logging: {'Disabled' if args.no_log_audio else 'Enabled'}")
+    
     print()
     
     try:

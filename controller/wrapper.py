@@ -2,6 +2,7 @@
 Wrapper controller for the voice assistant.
 
 This implements the core state machine and manages the flow between LLM and OS modes.
+Supports both text and audio interaction.
 """
 
 import os
@@ -17,6 +18,15 @@ from tools.logger import setup_logger
 from prompts.scene_loader import SceneLoader
 import config as app_config
 
+# Import audio components if available
+try:
+    from audio.controller import AudioController
+    AUDIO_SUPPORT = True
+except ImportError:
+    AUDIO_SUPPORT = False
+    logger = setup_logger()
+    logger.warning("Audio support not available. Install required packages to enable audio.")
+
 # Setup logger
 logger = setup_logger()
 
@@ -27,6 +37,7 @@ class Wrapper:
     - OS Mode: For executing validated system actions
     
     The wrapper controls flow between modes and manages transitions.
+    Supports both text and audio input/output.
     """
     
     def __init__(self, config=None):
@@ -59,6 +70,22 @@ class Wrapper:
         if self.config["scene_path"]:
             self.scene_context = app_config.load_scene(self.config["scene_path"])
         
+        # Initialize audio controller if supported and enabled
+        self.audio_controller = None
+        self.audio_mode = self.config.get("audio_mode", False)
+        if AUDIO_SUPPORT and self.audio_mode:
+            try:
+                self.audio_controller = AudioController(
+                    log_conversations=self.config.get("log_audio", True),
+                    log_dir=self.config.get("audio_log_dir", None)
+                )
+                # Set callback for audio transcriptions
+                self.audio_controller.set_transcription_callback(self._handle_audio_input)
+            except Exception as e:
+                logger.error(f"Failed to initialize audio controller: {e}")
+                self.audio_controller = None
+                self.audio_mode = False
+        
         # Initialize state
         self.current_mode = "LLM"  # Start in LLM mode
         self.pending_action = None
@@ -69,6 +96,7 @@ class Wrapper:
         
         logger.info(f"Initialized Wrapper controller in {self.current_mode} mode")
         logger.info(f"Scene context: {'Loaded' if self.scene_context else 'None'}")
+        logger.info(f"Audio mode: {'Enabled' if self.audio_mode else 'Disabled'}")
     
     def process_input(self, user_input):
         """Process user input based on current mode.
@@ -332,11 +360,102 @@ class Wrapper:
         self.retry_count = 0
         self.conversation_history = []
         logger.info("Wrapper controller reset to initial state")
+        
+        # Reset audio controller if available
+        if self.audio_controller:
+            if hasattr(self.audio_controller, 'stop'):
+                self.audio_controller.stop()
+            if hasattr(self.audio_controller, 'start'):
+                self.audio_controller.start()
+    
+    def _handle_audio_input(self, transcribed_text):
+        """Handle transcribed audio input from the audio controller.
+        
+        This is called by the audio controller when new audio input is transcribed.
+        
+        Args:
+            transcribed_text: The transcribed text from the audio input
+        """
+        if not transcribed_text:
+            logger.warning("Empty transcription received")
+            return
+            
+        logger.info(f"Audio input transcribed: {transcribed_text}")
+        
+        # Print the transcribed text
+        mode_indicator = "[LLM Mode]" if self.current_mode == "LLM" else "[OS Mode]"
+        print(f"\n{mode_indicator} You (audio): {transcribed_text}")
+        
+        # Check for exit command in LLM mode
+        if transcribed_text.lower() in ['exit', 'quit', 'bye', 'stop listening'] and self.current_mode == "LLM":
+            print("\nEnding assistant session.")
+            if self.audio_controller:
+                self.audio_controller.stop()
+            return
+        
+        # Process the input
+        result = self.process_input(transcribed_text)
+        
+        if result["success"]:
+            # Get response text
+            response_text = None
+            if result.get("response"):
+                # Extract plain text from JSON response if needed
+                response_text = result['response']
+                if response_text.startswith('{') and response_text.endswith('}'):
+                    try:
+                        json_data = json.loads(response_text)
+                        if isinstance(json_data, dict) and "response" in json_data:
+                            response_text = json_data["response"]
+                    except json.JSONDecodeError:
+                        pass
+                        
+                # Display the text response
+                print(f"\nAssistant: {response_text}")
+                
+                # Speak the response if audio controller is available
+                if self.audio_controller and response_text:
+                    self.audio_controller.speak_response(response_text)
+            
+            # If we just switched to OS mode, handle confirmation
+            if result.get("mode_switched") and self.current_mode == "OS" and self.pending_action:
+                self._handle_os_mode_transition(result["pending_action"])
+                
+                # Special handling for audio mode in OS mode
+                if self.audio_mode:
+                    # Wait for voice confirmation
+                    print("\n[OS Mode] Please confirm the action by voice")
+                    # Audio controller will handle this via callback
+            
+            # Show action results if available
+            if result.get("action_result"):
+                self._display_action_result(result["action_result"])
+                
+                # Speak result if audio controller is available
+                if self.audio_controller and result["action_result"].get("message"):
+                    self.audio_controller.speak_response(
+                        f"Action completed. {result['action_result'].get('message', '')}"
+                    )
+        else:
+            error_msg = f"Error: {result.get('error', 'Unknown error')}"
+            print(f"\n{error_msg}")
+            
+            # Speak error if audio controller is available
+            if self.audio_controller:
+                self.audio_controller.speak_response(error_msg)
 
     def run_interactive_session(self):
         """Run an interactive session with the voice assistant."""
         print("\n===== Voice Assistant =====")
-        print("(Type 'exit' to end the session)")
+        
+        # Start audio controller if available
+        if self.audio_mode and self.audio_controller:
+            print("Audio mode enabled. Speak to interact or type.")
+            self.audio_controller.start()
+            self.audio_controller.start_continuous_listening()
+            print("Listening for audio input...")
+        else:
+            print("(Type 'exit' to end the session)")
         
         # Print scene information if available
         if self.scene_context:
@@ -347,6 +466,10 @@ class Wrapper:
             if opening_message:
                 print(f"\nAssistant: {opening_message}")
                 self._update_conversation("[Session started]", opening_message)
+                
+                # Speak opening message if audio mode is enabled
+                if self.audio_mode and self.audio_controller:
+                    self.audio_controller.speak_response(opening_message)
         
         # Main interaction loop
         try:
@@ -354,7 +477,7 @@ class Wrapper:
                 # Get user input with mode indicator
                 mode_indicator = "[LLM Mode]" if self.current_mode == "LLM" else "[OS Mode]"
                 try:
-                    user_input = input(f"\n{mode_indicator} You: ")
+                    user_input = input(f"\n{mode_indicator} You (text): ")
                 except (EOFError, KeyboardInterrupt):
                     print("\nEnding assistant session.")
                     break
@@ -363,7 +486,18 @@ class Wrapper:
                 if user_input.lower() in ['exit', 'quit', 'bye'] and self.current_mode == "LLM":
                     print("\nEnding assistant session.")
                     break
-                    
+                
+                # Special commands for audio mode
+                if self.audio_mode and self.audio_controller:
+                    if user_input.lower() == 'start listening':
+                        print("Starting continuous listening...")
+                        self.audio_controller.start_continuous_listening()
+                        continue
+                    elif user_input.lower() == 'stop listening':
+                        print("Stopping continuous listening...")
+                        self.audio_controller.stop_listening()
+                        continue
+                
                 # Process the input
                 result = self.process_input(user_input)
                 
@@ -380,6 +514,10 @@ class Wrapper:
                             except json.JSONDecodeError:
                                 pass
                         print(f"\nAssistant: {response_text}")
+                        
+                        # Speak the response if audio mode is enabled
+                        if self.audio_mode and self.audio_controller:
+                            self.audio_controller.speak_response(response_text)
                     
                     # If we just switched to OS mode, handle confirmation
                     if result.get("mode_switched") and self.current_mode == "OS" and self.pending_action:
@@ -388,13 +526,30 @@ class Wrapper:
                     # Show action results if available
                     if result.get("action_result"):
                         self._display_action_result(result["action_result"])
+                        
+                        # Speak result if audio mode is enabled
+                        if self.audio_mode and self.audio_controller and result["action_result"].get("message"):
+                            self.audio_controller.speak_response(
+                                f"Action completed. {result['action_result'].get('message', '')}"
+                            )
                 else:
-                    print(f"\nError: {result.get('error', 'Unknown error')}")
+                    error_msg = f"Error: {result.get('error', 'Unknown error')}"
+                    print(f"\n{error_msg}")
+                    
+                    # Speak error if audio mode is enabled
+                    if self.audio_mode and self.audio_controller:
+                        self.audio_controller.speak_response(error_msg)
         
         except Exception as e:
             print(f"\nAn error occurred: {e}")
-            
-        print("\nThank you for using the Voice Assistant!")
+        
+        finally:
+            # Clean up audio resources
+            if self.audio_mode and self.audio_controller:
+                print("Stopping audio controller...")
+                self.audio_controller.stop()
+                
+            print("\nThank you for using the Voice Assistant!")
     
     def _handle_os_mode_transition(self, action):
         """Handle transition to OS mode.

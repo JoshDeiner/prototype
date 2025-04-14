@@ -14,12 +14,14 @@ ROOT_DIR = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Get DATA_DIR from environment variable if set, otherwise use default
 DATA_DIR = Path(os.environ.get('DATA_DIR', str(ROOT_DIR / "data")))
 SCENES_DIR = Path(os.environ.get('SCENES_DIR', str(ROOT_DIR / "scenes")))  # Use the original scenes directory
+AUDIO_LOG_DIR = Path(os.environ.get('AUDIO_LOG_DIR', str(ROOT_DIR / "logs" / "audio")))
 
 # Log the actual paths being used
 from tools.logger import setup_logger
 logger = setup_logger()
 logger.info(f"Using DATA_DIR: {DATA_DIR}")
 logger.info(f"Using SCENES_DIR: {SCENES_DIR}")
+logger.info(f"Using AUDIO_LOG_DIR: {AUDIO_LOG_DIR}")
 OUTPUT_DIR = ROOT_DIR / "output" / "scenes"
 
 # Default configuration
@@ -31,7 +33,19 @@ DEFAULT_CONFIG = {
     "delay": 0.5,
     "scene_path": None,
     "max_history": 5,
-    "max_retries": 3
+    "max_retries": 3,
+    
+    # Audio settings
+    "audio_mode": False,                  # Whether to enable audio input/output
+    "audio_input_device": None,           # Input device (None = default)
+    "audio_output_device": None,          # Output device (None = default)
+    "audio_model_size": "base",           # Whisper model size: tiny, base, small, medium, large
+    "tts_engine": "pyttsx3",              # TTS engine: pyttsx3 or edge_tts
+    "log_audio": True,                    # Whether to log audio conversations
+    "audio_log_dir": AUDIO_LOG_DIR,       # Directory to save audio logs
+    "continuous_listening": True,         # Whether to listen continuously or on-demand
+    "energy_threshold": 0.01,             # Minimum energy level to consider as speaking
+    "phrase_timeout": 1.0                 # Time of silence to consider end of phrase
 }
 
 # Supported LLM providers

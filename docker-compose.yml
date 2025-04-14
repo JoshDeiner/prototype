@@ -5,8 +5,10 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/app
+      - ./logs:/data/audio_logs
     environment:
       - DATA_DIR=/app/data
+      - AUDIO_LOG_DIR=/data/audio_logs
     # Let the entrypoint script handle the command
     # The .env file will be mounted from the host and loaded by the application
     env_file:
@@ -14,3 +16,6 @@ services:
     stdin_open: true  # docker run -i
     tty: true         # docker run -t
     init: true        # Use init process for proper signal handling
+    # Uncomment these lines to enable audio device access in Docker
+    #devices:
+    #  - /dev/snd:/dev/snd

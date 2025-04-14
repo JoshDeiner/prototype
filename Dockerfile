@@ -2,9 +2,21 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
+# Install system dependencies for audio support
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    portaudio19-dev \
+    pulseaudio \
+    libsndfile1 \
+    libgomp1 \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy requirements and install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Uncomment audio packages before installing
+RUN grep -v "^#" requirements.txt > requirements-clean.txt && \
+    sed -i 's/# \(sounddevice\|scipy\|openai-whisper\|pyttsx3\|pygame\|edge-tts\|numpy\|pyaudio\)/\1/g' requirements-clean.txt && \
+    pip install --no-cache-dir -r requirements-clean.txt
 
 # Copy application code
 COPY . .
@@ -15,6 +27,10 @@ COPY . .
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV DATA_DIR=/data
+ENV AUDIO_LOG_DIR=/data/audio_logs
+
+# Create directories
+RUN mkdir -p /data/audio_logs
 
 # Create volume for data
 VOLUME ["/data", "/app"]

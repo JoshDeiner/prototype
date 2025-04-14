@@ -1,6 +1,6 @@
 # Voice Assistant
 
-A modular monolith voice assistant that safely bridges natural language understanding with filesystem operations.
+A modular monolith voice assistant that safely bridges natural language understanding with filesystem operations. Now with audio input/output support!
 
 ## Architecture
 
@@ -21,6 +21,12 @@ voice-assistant/
 │   ├── llm_mode.py           # LLM handling, response parsing, validation
 │   ├── os_mode.py            # Action executor (safe commands, logging)
 │
+├── audio/                    # Audio processing components
+│   ├── audio_input.py        # Speech-to-text using Whisper
+│   ├── audio_output.py       # Text-to-speech processing
+│   ├── streamer.py           # Audio router/broadcaster
+│   └── controller.py         # Audio subsystem coordinator
+│
 ├── prompts/
 │   ├── scene_loader.py       # Load scene files (JSON/YAML)
 │   ├── prompt_builder.py     # Compose LLM prompt from scene + state
@@ -36,6 +42,9 @@ voice-assistant/
 ├── tests/
 │   ├── test_wrapper.py
 │   └── test_prompt_generation.py
+│
+├── logs/
+│   └── audio/                # Audio conversation logs
 │
 └── scenes/
     └── chrome_help.json      # Example scene files
@@ -90,6 +99,15 @@ python main.py --scene help_desk
 
 # Run in safe mode with manual confirmation
 python main.py --manual-confirm
+
+# Run with audio mode enabled
+python main.py --audio
+
+# List available audio devices
+python main.py --list-audio-devices
+
+# Run with specific audio settings
+python main.py --audio --whisper-model tiny --tts-engine edge_tts
 ```
 
 ## Configuration
@@ -99,3 +117,14 @@ Configuration options in `config.py`:
 - Safety mode settings
 - Scene paths and templates
 - System prompt templates
+- Audio processing options
+
+## Audio Features
+
+The assistant now supports a complete audio pipeline:
+- **Speech-to-Text**: Capture and transcribe user's voice using Whisper
+- **Text-to-Speech**: Convert assistant responses to speech
+- **Continuous Listening**: Automatically detect when user is speaking
+- **Audio Logging**: Save conversation audio for later review
+
+See `/audio/README.md` for detailed information about audio features.
