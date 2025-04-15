@@ -16,6 +16,6 @@ services:
     stdin_open: true  # docker run -i
     tty: true         # docker run -t
     init: true        # Use init process for proper signal handling
-    # Uncomment these lines to enable audio device access in Docker
-    #devices:
-    #  - /dev/snd:/dev/snd
+    # Enable audio device access in Docker
+    devices:
+      - /dev/snd:/dev/snd

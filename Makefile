@@ -106,10 +106,10 @@ docker-up-help:
 
 # Docker Compose with audio
 docker-up-audio:
-	docker-compose run --device /dev/snd voice-assistant --audio $(ARGS)
+	docker-compose run voice-assistant --audio $(ARGS)
 
 docker-up-audio-help:
-	docker-compose run --device /dev/snd voice-assistant --audio --scene help_desk_scenario --data-dir /app/data
+	docker-compose run voice-assistant --audio --scene help_desk_scenario --data-dir /app/data
 
 docker-down:
 	docker-compose down
