@@ -13,10 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy requirements and install dependencies
 COPY requirements.txt .
-# Uncomment audio packages before installing
-RUN grep -v "^#" requirements.txt > requirements-clean.txt && \
-    sed -i 's/# \(sounddevice\|scipy\|openai-whisper\|pyttsx3\|pygame\|edge-tts\|numpy\|pyaudio\)/\1/g' requirements-clean.txt && \
-    pip install --no-cache-dir -r requirements-clean.txt
+# Install dependencies directly from requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
